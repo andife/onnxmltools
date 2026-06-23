@@ -27,9 +27,10 @@ from onnxmltools.utils import dump_data_and_model
 try:
     from coremltools.converters.xgboost import convert as convert_xgb_to_coreml
     from xgboost import XGBRegressor
-    XGBOOST_AVAILABLE = True
-except Exception:
+except (ImportError, OSError):
     XGBOOST_AVAILABLE = False
+else:
+    XGBOOST_AVAILABLE = True
 
 TARGET_OPSET = min(DEFAULT_OPSET_NUMBER, onnx_opset_version())
 
