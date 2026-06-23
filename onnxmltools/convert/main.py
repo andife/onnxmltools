@@ -447,7 +447,7 @@ def convert_tensorflow(
 ) -> onnx.ModelProto:
     import pkgutil
 
-    if not pkgutil.find_loader("tf2onnx"):
+    if not pkgutil.find_loader("tf2onnx"):  # type: ignore[attr-defined]
         raise RuntimeError(
             "tf2onnx is not installed, please install it before calling this function."
         )
