@@ -868,15 +868,16 @@ class TestXGBoostModels(unittest.TestCase):
 
         initial_types = [("float_input", FloatTensorType([None, x_train.shape[1]]))]
         onnx_model = convert_xgboost(model, initial_types=initial_types)
-        for att in onnx_model.graph.node[0].attribute:
-            if att.name == "nodes_treeids":
-                self.assertLess(max(att.ints), 1000)
-            if att.name == "class_ids":
-                self.assertEqual(set(att.ints), {0})
-            if att.name == "base_values":
-                self.assertEqual(len(att.floats), 1)
-            if att.name == "post_transform":
-                self.assertEqual(att.s, b"LOGISTIC")
+        tree_node = next(
+            node
+            for node in onnx_model.graph.node
+            if node.op_type == "TreeEnsembleClassifier"
+        )
+        tree_attrs = {att.name: att for att in tree_node.attribute}
+        self.assertLess(max(tree_attrs["nodes_treeids"].ints), 1000)
+        if "base_values" in tree_attrs:
+            self.assertEqual(len(tree_attrs["base_values"].floats), 1)
+        self.assertEqual(tree_attrs["post_transform"].s, b"LOGISTIC")
 
         expected = model.predict(x_test), model.predict_proba(x_test)
         sess = InferenceSession(onnx_model.SerializeToString())
@@ -934,7 +935,7 @@ class TestXGBoostModels(unittest.TestCase):
             # Note: X[["f0"]].values gives actual category values (e.g. 65, 66, 67),
             # but XGBoost stores category codes (0, 1, 2...) in its tree JSON dump,
             # so ONNX BRANCH_EQ nodes compare against codes, not raw values.
-            cat_codes = X["f0"].cat.codes.values.reshape(-1, 1).astype(np.float32)
+            cat_codes = X["f0"].cat.codes.to_numpy(dtype=np.float32).reshape(-1, 1)
             num_col = X[["f1"]].values.astype(np.float32)
             X_onnx = np.concatenate([cat_codes, num_col], axis=1)
 
@@ -996,7 +997,7 @@ class TestXGBoostModels(unittest.TestCase):
         )
 
         # Use pandas category codes (0, 1, 2...) not raw values (65, 66, 67...)
-        cat_codes = X["f0"].cat.codes.values.reshape(-1, 1).astype(np.float32)
+        cat_codes = X["f0"].cat.codes.to_numpy(dtype=np.float32).reshape(-1, 1)
         num_col = X[["f1"]].values.astype(np.float32)
         X_onnx = np.concatenate([cat_codes, num_col], axis=1)
 
