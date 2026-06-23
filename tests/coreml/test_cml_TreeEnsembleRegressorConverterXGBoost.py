@@ -29,6 +29,14 @@ try:
     from xgboost import XGBRegressor
 except (ImportError, OSError):
     XGBOOST_AVAILABLE = False
+except Exception as e:
+    # XGBoostError (raised when libomp.dylib is missing on macOS) does not
+    # inherit from ImportError/OSError, so we check by name to avoid catching
+    # unrelated programming errors.
+    if type(e).__name__ == "XGBoostError":
+        XGBOOST_AVAILABLE = False
+    else:
+        raise
 else:
     XGBOOST_AVAILABLE = True
 

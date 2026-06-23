@@ -135,6 +135,9 @@ jobs:
       - name: Run tests coreml
         if: matrix.os != 'windows-latest' && matrix.python_version != '3.13'
         run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            brew install libomp
+          fi
           pip install coremltools
           pytest tests/coreml
 
