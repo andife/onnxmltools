@@ -8,11 +8,6 @@ from ..common._topology import convert_topology
 from ..common.onnx_ex import get_maximum_opset_supported
 from ._parse import parse_coreml
 
-# Import modules to invoke function registrations
-from . import shape_calculators  # noqa: F401
-from . import operator_converters  # noqa: F401
-
-
 def convert(
     model,
     name=None,
@@ -59,6 +54,9 @@ def convert(
         initial_type = [('A', FloatTensorType([40, 12, 1, 1])),
                         ('B', FloatTensorType([1, 32, 1, 1]))]
     """
+    from . import shape_calculators  # registers shape calculators as side effect
+    from . import operator_converters  # registers converters as side effect
+
     if isinstance(model, coremltools.models.MLModel):
         spec = model.get_spec()
     else:
