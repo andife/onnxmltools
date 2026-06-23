@@ -9,6 +9,8 @@ from ..common.onnx_ex import get_maximum_opset_supported
 from ._parse import parse_coreml
 
 # Import modules to invoke function registrations
+from . import shape_calculators  # noqa: F401
+from . import operator_converters  # noqa: F401
 
 
 def convert(
