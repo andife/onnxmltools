@@ -54,8 +54,8 @@ def convert(
         initial_type = [('A', FloatTensorType([40, 12, 1, 1])),
                         ('B', FloatTensorType([1, 32, 1, 1]))]
     """
-    from . import shape_calculators  # registers shape calculators as side effect
-    from . import operator_converters  # registers converters as side effect
+    from . import shape_calculators  # noqa: F401 - registers shape calculators as side effect
+    from . import operator_converters  # noqa: F401 - registers converters as side effect
 
     if isinstance(model, coremltools.models.MLModel):
         spec = model.get_spec()
